@@ -710,10 +710,6 @@
         </div>
 
         <div class="best-badge">BEST SCORE: <span id="title-best">0</span></div>
-
-        <div style="margin-top: 10px;">
-          <button id="btn-open-gas" class="btn btn-ghost">⚙ オンラインランキング設定 (GAS)</button>
-        </div>
       </div>
     </div>
 
@@ -792,29 +788,6 @@
 
         <div class="btn-row">
           <button id="btn-close-ranking" class="btn btn-primary">閉じる</button>
-          <button id="btn-ranking-gas" class="btn btn-secondary">⚙ GAS設定</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- GAS Setup Overlay -->
-    <div id="overlay-gas" class="overlay hidden">
-      <div class="panel">
-        <div class="title-kicker">ZERO-COST ONLINE RANKING</div>
-        <h2 style="margin: 0 0 6px; font-size: 20px;">Google Apps Script 連携</h2>
-        <p class="helper-text">
-          付属の <code>gas/Code.gs</code> を Googleスプレッドシートの Apps Script に貼り付けて「ウェブアプリ（全員にアクセス許可）」としてデプロイし、発行された URL を下に貼るだけで維持費0円のオンラインランキングが動きます。
-        </p>
-
-        <input id="gas-url-input" class="text-input" style="width: 100%; margin-bottom: 10px;" type="url" placeholder="https://script.google.com/macros/s/.../exec" />
-        <div id="gas-test-status" class="submit-status" style="text-align: left; margin-bottom: 12px;"></div>
-
-        <div class="btn-row">
-          <button id="btn-save-gas" class="btn btn-primary">保存して接続テスト</button>
-          <button id="btn-clear-gas" class="btn btn-secondary">クリア</button>
-        </div>
-        <div style="margin-top: 8px;">
-          <button id="btn-close-gas" class="btn btn-ghost">閉じる</button>
         </div>
       </div>
     </div>
@@ -1362,8 +1335,7 @@
       title: document.getElementById('overlay-title'),
       pause: document.getElementById('overlay-pause'),
       gameover: document.getElementById('overlay-gameover'),
-      ranking: document.getElementById('overlay-ranking'),
-      gas: document.getElementById('overlay-gas')
+      ranking: document.getElementById('overlay-ranking')
     };
 
     // Viewport & Arena Geometry
@@ -2938,15 +2910,6 @@
       loadAndRenderRanking('all');
     }
 
-    function openGasModal(fromOverlay) {
-      returnOverlayAfterRanking = fromOverlay;
-      document.getElementById('gas-url-input').value = ranking.getEndpoint();
-      const status = document.getElementById('gas-test-status');
-      status.textContent = '';
-      status.className = 'submit-status';
-      showOverlay('gas');
-    }
-
     // Button bindings
     document.getElementById('btn-play').addEventListener('click', startGame);
     document.getElementById('btn-retry').addEventListener('click', startGame);
@@ -2992,9 +2955,6 @@
     document.getElementById('btn-open-ranking').addEventListener('click', () => openRanking('title'));
     document.getElementById('btn-result-ranking').addEventListener('click', () => openRanking('gameover'));
     document.getElementById('btn-close-ranking').addEventListener('click', () => showOverlay(returnOverlayAfterRanking));
-    document.getElementById('btn-ranking-gas').addEventListener('click', () => openGasModal('ranking'));
-    document.getElementById('btn-open-gas').addEventListener('click', () => openGasModal('title'));
-    document.getElementById('btn-close-gas').addEventListener('click', () => showOverlay(returnOverlayAfterRanking));
 
     document.getElementById('tab-all').addEventListener('click', () => loadAndRenderRanking('all'));
     document.getElementById('tab-weekly').addEventListener('click', () => loadAndRenderRanking('weekly'));
@@ -3032,39 +2992,6 @@
         status.className = 'submit-status error';
         status.textContent = `送信失敗: ${err.message}`;
       }
-    });
-
-    document.getElementById('btn-save-gas').addEventListener('click', async () => {
-      const url = document.getElementById('gas-url-input').value.trim();
-      const status = document.getElementById('gas-test-status');
-      if (url && !/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(url)) {
-        status.className = 'submit-status error';
-        status.textContent = 'URLは https://script.google.com/macros/s/.../exec 形式で入力してください。';
-        return;
-      }
-      ranking.setEndpoint(url);
-      if (!url) {
-        status.className = 'submit-status';
-        status.textContent = 'ローカルモードに戻しました。';
-        return;
-      }
-      status.className = 'submit-status';
-      status.textContent = '接続テスト中...';
-      try {
-        const res = await ranking.fetchTop('all');
-        status.textContent = `接続成功！オンラインランキング有効（現在 ${res.total} 件のスコア）`;
-      } catch (err) {
-        status.className = 'submit-status error';
-        status.textContent = `接続失敗: ${err.message}`;
-      }
-    });
-
-    document.getElementById('btn-clear-gas').addEventListener('click', () => {
-      document.getElementById('gas-url-input').value = '';
-      ranking.setEndpoint('');
-      const status = document.getElementById('gas-test-status');
-      status.className = 'submit-status';
-      status.textContent = 'GAS設定をクリアしました（ローカルモード）。';
     });
 
     // Keyboard shortcuts for desktop convenience
